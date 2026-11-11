@@ -179,7 +179,7 @@
 
                         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
                             <h3 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-                                <i class="fa-solid fa-user-check text-brand-500 me-2"></i> Student Registrations
+                                <i class="fa-solid fa-user-check text-brand-500 me-2"></i> Top Enrolled Students
                             </h3>
                             <div class="relative h-64">
                                 <canvas id="studentChart"></canvas>
@@ -433,7 +433,27 @@ VALUES
 (2, 'Bob', 'Johnson', 'bob@lagucc.cuny.edu'),
 (3, 'Carol', 'White', 'carol@lagucc.cuny.edu'),
 (4, 'David', 'Lee', 'david@lagucc.cuny.edu'),
-(5, 'Eva', 'Martinez', 'eva@lagucc.cuny.edu');
+(5, 'Eva', 'Martinez', 'eva@lagucc.cuny.edu'),
+(6, 'Frank', 'Miller', 'frank@lagucc.cuny.edu'),
+(7, 'Grace', 'Davis', 'grace@lagucc.cuny.edu'),
+(8, 'Henry', 'Wilson', 'henry@lagucc.cuny.edu'),
+(9, 'Isabella', 'Taylor', 'isabella@lagucc.cuny.edu'),
+(10, 'Jack', 'Anderson', 'jack@lagucc.cuny.edu'),
+(11, 'Karen', 'Thomas', 'karen@lagucc.cuny.edu'),
+(12, 'Leo', 'Jackson', 'leo@lagucc.cuny.edu'),
+(13, 'Mia', 'White', 'mia@lagucc.cuny.edu'),
+(14, 'Noah', 'Harris', 'noah@lagucc.cuny.edu'),
+(15, 'Olivia', 'Martin', 'olivia@lagucc.cuny.edu'),
+(16, 'Peter', 'Thompson', 'peter@lagucc.cuny.edu'),
+(17, 'Quinn', 'Garcia', 'quinn@lagucc.cuny.edu'),
+(18, 'Rachel', 'Martinez', 'rachel@lagucc.cuny.edu'),
+(19, 'Samuel', 'Robinson', 'samuel@lagucc.cuny.edu'),
+(20, 'Sophia', 'Clark', 'sophia@lagucc.cuny.edu'),
+(21, 'Tyler', 'Rodriguez', 'tyler@lagucc.cuny.edu'),
+(22, 'Victoria', 'Lewis', 'victoria@lagucc.cuny.edu'),
+(23, 'William', 'Lee', 'william@lagucc.cuny.edu'),
+(24, 'Xavier', 'Walker', 'xavier@lagucc.cuny.edu'),
+(25, 'Yara', 'Hall', 'yara@lagucc.cuny.edu');
 
 INSERT INTO Courses (course_id, course_code, course_name, credits)
 VALUES
@@ -441,7 +461,12 @@ VALUES
 (102, 'MAC220', 'Application Development for Android', 3),
 (103, 'MAC250', 'Database Concepts and Programming', 3),
 (104, 'MAC270', 'Advanced Data Structures', 3),
-(105, 'MAT200', 'Discrete Mathematics', 4);
+(105, 'MAT200', 'Discrete Mathematics', 4),
+(106, 'MAC101', 'Introduction to Computer Science', 3),
+(107, 'MAC286', 'Data Communication and Networks', 3),
+(108, 'MAC281', 'Discrete Structures', 3),
+(109, 'MAT201', 'Calculus I', 4),
+(110, 'MAC221', 'iOS App Development with SwiftUI', 3);
 
 INSERT INTO Enrollments (student_id, course_id, registration_date)
 VALUES
@@ -459,7 +484,47 @@ VALUES
 (5, 101, '2026-09-01'),
 (5, 102, '2026-09-02'),
 (5, 103, '2026-09-03'),
-(5, 105, '2026-09-05');</code></pre>
+(5, 105, '2026-09-05'),
+(6, 106, '2026-09-06'),
+(6, 101, '2026-09-06'),
+(7, 103, '2026-09-06'),
+(7, 107, '2026-09-07'),
+(8, 108, '2026-09-07'),
+(8, 109, '2026-09-08'),
+(9, 110, '2026-09-08'),
+(9, 102, '2026-09-08'),
+(10, 101, '2026-09-09'),
+(10, 105, '2026-09-09'),
+(11, 103, '2026-09-10'),
+(11, 104, '2026-09-10'),
+(12, 106, '2026-09-11'),
+(12, 107, '2026-09-11'),
+(13, 108, '2026-09-12'),
+(13, 110, '2026-09-12'),
+(14, 102, '2026-09-13'),
+(14, 103, '2026-09-13'),
+(15, 101, '2026-09-14'),
+(15, 109, '2026-09-14'),
+(16, 104, '2026-09-15'),
+(16, 105, '2026-09-15'),
+(17, 106, '2026-09-16'),
+(17, 110, '2026-09-16'),
+(18, 107, '2026-09-17'),
+(18, 108, '2026-09-17'),
+(19, 102, '2026-09-18'),
+(19, 103, '2026-09-18'),
+(20, 101, '2026-09-19'),
+(20, 105, '2026-09-19'),
+(21, 104, '2026-09-20'),
+(21, 109, '2026-09-20'),
+(22, 106, '2026-09-21'),
+(22, 110, '2026-09-21'),
+(23, 102, '2026-09-22'),
+(23, 103, '2026-09-22'),
+(24, 107, '2026-09-23'),
+(24, 108, '2026-09-23'),
+(25, 101, '2026-09-24'),
+(25, 105, '2026-09-24');</code></pre>
                     </div>
                 </div>
 
@@ -580,37 +645,62 @@ VALUES
                 return this.enrollments.filter(e => e.courseId === courseId).length;
             }
 
-            // Pre-seed Data from seed.sql
+            // Pre-seed Data from seed.sql (25 Students, 10 Courses, 25 Enrollments)
             seedInitialData() {
-                // Initial Students
+                // Initial Students (25)
                 const initialStudents = [
                     { id: 1, firstName: 'Alice', lastName: 'Smith', email: 'alice@lagucc.cuny.edu' },
                     { id: 2, firstName: 'Bob', lastName: 'Johnson', email: 'bob@lagucc.cuny.edu' },
                     { id: 3, firstName: 'Carol', lastName: 'White', email: 'carol@lagucc.cuny.edu' },
                     { id: 4, firstName: 'David', lastName: 'Lee', email: 'david@lagucc.cuny.edu' },
-                    { id: 5, firstName: 'Eva', lastName: 'Martinez', email: 'eva@lagucc.cuny.edu' }
+                    { id: 5, firstName: 'Eva', lastName: 'Martinez', email: 'eva@lagucc.cuny.edu' },
+                    { id: 6, firstName: 'Frank', lastName: 'Miller', email: 'frank@lagucc.cuny.edu' },
+                    { id: 7, firstName: 'Grace', lastName: 'Davis', email: 'grace@lagucc.cuny.edu' },
+                    { id: 8, firstName: 'Henry', lastName: 'Wilson', email: 'henry@lagucc.cuny.edu' },
+                    { id: 9, firstName: 'Isabella', lastName: 'Taylor', email: 'isabella@lagucc.cuny.edu' },
+                    { id: 10, firstName: 'Jack', lastName: 'Anderson', email: 'jack@lagucc.cuny.edu' },
+                    { id: 11, firstName: 'Karen', lastName: 'Thomas', email: 'karen@lagucc.cuny.edu' },
+                    { id: 12, firstName: 'Leo', lastName: 'Jackson', email: 'leo@lagucc.cuny.edu' },
+                    { id: 13, firstName: 'Mia', lastName: 'White', email: 'mia@lagucc.cuny.edu' },
+                    { id: 14, firstName: 'Noah', lastName: 'Harris', email: 'noah@lagucc.cuny.edu' },
+                    { id: 15, firstName: 'Olivia', lastName: 'Martin', email: 'olivia@lagucc.cuny.edu' },
+                    { id: 16, firstName: 'Peter', lastName: 'Thompson', email: 'peter@lagucc.cuny.edu' },
+                    { id: 17, firstName: 'Quinn', lastName: 'Garcia', email: 'quinn@lagucc.cuny.edu' },
+                    { id: 18, firstName: 'Rachel', lastName: 'Martinez', email: 'rachel@lagucc.cuny.edu' },
+                    { id: 19, firstName: 'Samuel', lastName: 'Robinson', email: 'samuel@lagucc.cuny.edu' },
+                    { id: 20, firstName: 'Sophia', lastName: 'Clark', email: 'sophia@lagucc.cuny.edu' },
+                    { id: 21, firstName: 'Tyler', lastName: 'Rodriguez', email: 'tyler@lagucc.cuny.edu' },
+                    { id: 22, firstName: 'Victoria', lastName: 'Lewis', email: 'victoria@lagucc.cuny.edu' },
+                    { id: 23, firstName: 'William', lastName: 'Lee', email: 'william@lagucc.cuny.edu' },
+                    { id: 24, firstName: 'Xavier', lastName: 'Walker', email: 'xavier@lagucc.cuny.edu' },
+                    { id: 25, firstName: 'Yara', lastName: 'Hall', email: 'yara@lagucc.cuny.edu' }
                 ];
 
                 initialStudents.forEach(s => {
                     this.students.push(new Student(s.id, s.firstName, s.lastName, s.email));
                 });
-                this.nextStudentId = 6;
+                this.nextStudentId = 26;
 
-                // Initial Courses
+                // Initial Courses (10)
                 const initialCourses = [
                     { id: 101, code: 'MAC190', name: 'Object-Oriented Programming', credits: 4 },
                     { id: 102, code: 'MAC220', name: 'Application Development for Android', credits: 3 },
                     { id: 103, code: 'MAC250', name: 'Database Concepts and Programming', credits: 3 },
                     { id: 104, code: 'MAC270', name: 'Advanced Data Structures', credits: 3 },
-                    { id: 105, code: 'MAT200', name: 'Discrete Mathematics', credits: 4 }
+                    { id: 105, code: 'MAT200', name: 'Discrete Mathematics', credits: 4 },
+                    { id: 106, code: 'MAC101', name: 'Introduction to Computer Science', credits: 3 },
+                    { id: 107, code: 'MAC286', name: 'Data Communication and Networks', credits: 3 },
+                    { id: 108, code: 'MAC281', name: 'Discrete Structures', credits: 3 },
+                    { id: 109, code: 'MAT201', name: 'Calculus I', credits: 4 },
+                    { id: 110, code: 'MAC221', name: 'iOS App Development with SwiftUI', credits: 3 }
                 ];
 
                 initialCourses.forEach(c => {
                     this.courses.push(new Course(c.id, c.code, c.name, c.credits));
                 });
-                this.nextCourseId = 106;
+                this.nextCourseId = 111;
 
-                // Initial Enrollments
+                // Initial Enrollments (55 total relationships)
                 const initialEnrollments = [
                     { studentId: 1, courseId: 101, date: '2026-09-01' },
                     { studentId: 1, courseId: 103, date: '2026-09-01' },
@@ -626,7 +716,47 @@ VALUES
                     { studentId: 5, courseId: 101, date: '2026-09-01' },
                     { studentId: 5, courseId: 102, date: '2026-09-02' },
                     { studentId: 5, courseId: 103, date: '2026-09-03' },
-                    { studentId: 5, courseId: 105, date: '2026-09-05' }
+                    { studentId: 5, courseId: 105, date: '2026-09-05' },
+                    { studentId: 6, courseId: 106, date: '2026-09-06' },
+                    { studentId: 6, courseId: 101, date: '2026-09-06' },
+                    { studentId: 7, courseId: 103, date: '2026-09-06' },
+                    { studentId: 7, courseId: 107, date: '2026-09-07' },
+                    { studentId: 8, courseId: 108, date: '2026-09-07' },
+                    { studentId: 8, courseId: 109, date: '2026-09-08' },
+                    { studentId: 9, courseId: 110, date: '2026-09-08' },
+                    { studentId: 9, courseId: 102, date: '2026-09-08' },
+                    { studentId: 10, courseId: 101, date: '2026-09-09' },
+                    { studentId: 10, courseId: 105, date: '2026-09-09' },
+                    { studentId: 11, courseId: 103, date: '2026-09-10' },
+                    { studentId: 11, courseId: 104, date: '2026-09-10' },
+                    { studentId: 12, courseId: 106, date: '2026-09-11' },
+                    { studentId: 12, courseId: 107, date: '2026-09-11' },
+                    { studentId: 13, courseId: 108, date: '2026-09-12' },
+                    { studentId: 13, courseId: 110, date: '2026-09-12' },
+                    { studentId: 14, courseId: 102, date: '2026-09-13' },
+                    { studentId: 14, courseId: 103, date: '2026-09-13' },
+                    { studentId: 15, courseId: 101, date: '2026-09-14' },
+                    { studentId: 15, courseId: 109, date: '2026-09-14' },
+                    { studentId: 16, courseId: 104, date: '2026-09-15' },
+                    { studentId: 16, courseId: 105, date: '2026-09-15' },
+                    { studentId: 17, courseId: 106, date: '2026-09-16' },
+                    { studentId: 17, courseId: 110, date: '2026-09-16' },
+                    { studentId: 18, courseId: 107, date: '2026-09-17' },
+                    { studentId: 18, courseId: 108, date: '2026-09-17' },
+                    { studentId: 19, courseId: 102, date: '2026-09-18' },
+                    { studentId: 19, courseId: 103, date: '2026-09-18' },
+                    { studentId: 20, courseId: 101, date: '2026-09-19' },
+                    { studentId: 20, courseId: 105, date: '2026-09-19' },
+                    { studentId: 21, courseId: 104, date: '2026-09-20' },
+                    { studentId: 21, courseId: 109, date: '2026-09-20' },
+                    { studentId: 22, courseId: 106, date: '2026-09-21' },
+                    { studentId: 22, courseId: 110, date: '2026-09-21' },
+                    { studentId: 23, courseId: 102, date: '2026-09-22' },
+                    { studentId: 23, courseId: 103, date: '2026-09-22' },
+                    { studentId: 24, courseId: 107, date: '2026-09-23' },
+                    { studentId: 24, courseId: 108, date: '2026-09-23' },
+                    { studentId: 25, courseId: 101, date: '2026-09-24' },
+                    { studentId: 25, courseId: 105, date: '2026-09-24' }
                 ];
 
                 initialEnrollments.forEach(e => {
@@ -813,18 +943,20 @@ VALUES
                 }
             });
 
-            // Student Registrations Distribution
-            const studentLabels = db.students.map(s => s.getFullName());
-            const studentCounts = db.students.map(s => db.getStudentEnrollmentsCount(s.id));
+            // Top Enrolled Students Distribution
+            const topStudents = [...db.students]
+                .map(s => ({ name: s.getFullName(), count: db.getStudentEnrollmentsCount(s.id) }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 7);
 
             const ctxStudent = document.getElementById('studentChart').getContext('2d');
             if (studentChartInstance) studentChartInstance.destroy();
             studentChartInstance = new Chart(ctxStudent, {
                 type: 'doughnut',
                 data: {
-                    labels: studentLabels,
+                    labels: topStudents.map(s => s.name),
                     datasets: [{
-                        data: studentCounts,
+                        data: topStudents.map(s => s.count),
                         backgroundColor: [
                             '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b', '#06b6d4'
                         ]
