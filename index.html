@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Académica - Escuela DB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <div class="min-h-full flex flex-col md:flex-row">
+
+        <!-- Sidebar / Navigation -->
+        <aside class="w-full md:w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div class="p-6 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md shadow-brand-500/20">
+                        <i class="fa-solid me-0 fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Escuela DB</h1>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">OOP Dynamic Engine</span>
+                    </div>
+                </div>
+                <!-- Dark Mode Toggle Mobile -->
+                <button onclick="toggleDarkMode()" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+
+            <nav class="px-4 space-y-1.5 pb-6">
+                <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-brand-500 text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-chart-pie w-5"></i>
+                    <span>Overview</span>
+                </button>
+                <button onclick="switchTab('students')" id="nav-students" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-user-graduate w-5"></i>
+                    <span>Students</span>
+                    <span id="badge-students" class="ml-auto bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+                <button onclick="switchTab('courses')" id="nav-courses" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-book-open w-5"></i>
+                    <span>Courses</span>
+                    <span id="badge-courses" class="ml-auto bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+                <button onclick="switchTab('enrollments')" id="nav-enrollments" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-clipboard-list w-5"></i>
+                    <span>Enrollments</span>
+                    <span id="badge-enrollments" class="ml-auto bg-slate-200 dark:bg-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+                <button onclick="switchTab('create')" id="nav-create" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-plus-circle w-5 text-emerald-500"></i>
+                    <span>Add New Data</span>
+                </button>
+                <button onclick="switchTab('sql-scripts')" id="nav-sql-scripts" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-code w-5"></i>
+                    <span>SQL Viewer</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <!-- Header Bar -->
+            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h2 id="header-title" class="text-xl font-bold text-slate-800 dark:text-white">Dashboard Overview</h2>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleDarkMode()" class="hidden md:flex p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                    </button>
+                    <button onclick="switchTab('create')" class="flex items-center space-x-2 bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-brand-700 transition-all shadow-sm">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">New Entry</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Views Container -->
+            <div class="flex-1 overflow-y-auto p-6">
+                
+                <!-- 1. OVERVIEW TAB -->
+                <div id="tab-overview" class="tab-content space-y-6">
+                    <!-- Metric Cards Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Students</span>
+                                <div class="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                                    <i class="fa-solid fa-users text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-3xl font-extrabold mt-4" id="stat-students">0</p>
+                            <span class="text-xs text-emerald-600 font-semibold flex items-center mt-2">
+                                <i class="fa-solid fa-check me-1"></i> Managed via OOP Engine
+                            </span>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Available Courses</span>
+                                <div class="p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                                    <i class="fa-solid fa-book text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-3xl font-extrabold mt-4" id="stat-courses">0</p>
+                            <span class="text-xs text-slate-500 font-medium flex items-center mt-2" id="stat-credits">
+                                Total Credits: 0
+                            </span>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Enrollments</span>
+                                <div class="p-3 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl">
+                                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-3xl font-extrabold mt-4" id="stat-enrollments">0</p>
+                            <span class="text-xs text-purple-600 font-semibold flex items-center mt-2" id="stat-ratio">
+                                0.0 Courses / Student
+                            </span>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Most Popular Course</span>
+                                <div class="p-3 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
+                                    <i class="fa-solid fa-fire text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-xl font-bold mt-4 text-slate-800 dark:text-white truncate" id="stat-popular-course">N/A</p>
+                            <span class="text-xs text-amber-600 font-semibold flex items-center mt-2" id="stat-popular-count">
+                                0 Enrollments
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                            <h3 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+                                <i class="fa-solid fa-chart-bar text-brand-500 me-2"></i> Course Enrollment Distribution
+                            </h3>
+                            <div class="relative h-64">
+                                <canvas id="courseChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                            <h3 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+                                <i class="fa-solid fa-user-check text-brand-500 me-2"></i> Student Registrations
+                            </h3>
+                            <div class="relative h-64">
+                                <canvas id="studentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. STUDENTS TAB -->
+                <div id="tab-students" class="tab-content hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="search-students" onkeyup="filterTable('students')" placeholder="Search students..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <span class="text-sm text-slate-500" id="count-students-text">Showing 0 registered students</span>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="table-students">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">ID</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Full Name</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Email Address</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Active Courses</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                                    <!-- Dynamic Population -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. COURSES TAB -->
+                <div id="tab-courses" class="tab-content hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="search-courses" onkeyup="filterTable('courses')" placeholder="Search courses..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <span class="text-sm text-slate-500" id="count-courses-text">Showing 0 course records</span>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="table-courses">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Course ID</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Code</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Course Name</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Credits</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Enrolled Students</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                                    <!-- Dynamic Population -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ENROLLMENTS TAB -->
+                <div id="tab-enrollments" class="tab-content hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="search-enrollments" onkeyup="filterTable('enrollments')" placeholder="Search enrollments..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <span class="text-sm text-slate-500" id="count-enrollments-text">0 Total Registrations</span>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="table-enrollments">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Enrollment ID</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Student Name</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Course</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700">Registration Date</th>
+                                        <th class="p-4 border-b border-slate-100 dark:border-slate-700 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                                    <!-- Dynamic Population -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. INTERACTIVE CREATE DATA TAB -->
+                <div id="tab-create" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Create Student Form -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+                            <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                <div class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-lg">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <h3 class="font-bold text-lg text-slate-800 dark:text-white">Add New Student</h3>
+                            </div>
+                            <form id="form-add-student" onsubmit="handleCreateStudent(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">First Name</label>
+                                    <input type="text" id="student-firstname" required placeholder="e.g. John" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Last Name</label>
+                                    <input type="text" id="student-lastname" required placeholder="e.g. Doe" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Email Address</label>
+                                    <input type="email" id="student-email" required placeholder="e.g. jdoe@lagucc.cuny.edu" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl text-sm transition-all shadow-md">
+                                    Create Student
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Create Course Form -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+                            <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                <div class="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 rounded-lg">
+                                    <i class="fa-solid fa-book-medical"></i>
+                                </div>
+                                <h3 class="font-bold text-lg text-slate-800 dark:text-white">Add New Course</h3>
+                            </div>
+                            <form id="form-add-course" onsubmit="handleCreateCourse(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Course Code</label>
+                                    <input type="text" id="course-code" required placeholder="e.g. MAC290" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Course Name</label>
+                                    <input type="text" id="course-name" required placeholder="e.g. Web Development II" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Credits</label>
+                                    <input type="number" id="course-credits" min="1" max="6" value="3" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl text-sm transition-all shadow-md">
+                                    Create Course
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Enroll Student Form -->
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+                            <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                <div class="p-2 bg-purple-100 dark:bg-purple-900/40 text-purple-600 rounded-lg">
+                                    <i class="fa-solid fa-file-signature"></i>
+                                </div>
+                                <h3 class="font-bold text-lg text-slate-800 dark:text-white">Enroll Student</h3>
+                            </div>
+                            <form id="form-add-enrollment" onsubmit="handleCreateEnrollment(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Select Student</label>
+                                    <select id="enroll-student-select" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                        <!-- Dynamic Options -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Select Course</label>
+                                    <select id="enroll-course-select" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                        <!-- Dynamic Options -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Registration Date</label>
+                                    <input type="date" id="enroll-date" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <button type="submit" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl text-sm transition-all shadow-md">
+                                    Register Enrollment
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 6. SQL SCRIPTS TAB -->
+                <div id="tab-sql-scripts" class="tab-content hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-file-code text-brand-500 text-lg"></i>
+                                <h3 class="font-bold text-slate-800 dark:text-white">schema.sql</h3>
+                            </div>
+                            <button onclick="copyToClipboard('code-schema')" class="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-lg text-slate-600 dark:text-slate-300 font-medium transition-all">
+                                <i class="fa-regular fa-copy me-1"></i> Copy Code
+                            </button>
+                        </div>
+                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-xs leading-relaxed"><code id="code-schema">CREATE DATABASE IF NOT EXISTS escuela_db;
+USE escuela_db;
+
+DROP TABLE IF EXISTS Enrollments;
+DROP TABLE IF EXISTS Courses;
+DROP TABLE IF EXISTS Students;
+
+CREATE TABLE Students (
+  student_id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE Courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  course_code VARCHAR(10) UNIQUE NOT NULL,
+  course_name VARCHAR(100) NOT NULL,
+  credits INT NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE Enrollments (
+  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  registration_date DATE NOT NULL,
+  FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES Courses(course_id) ON DELETE CASCADE
+) ENGINE=InnoDB;</code></pre>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-file-code text-brand-500 text-lg"></i>
+                                <h3 class="font-bold text-slate-800 dark:text-white">seed.sql</h3>
+                            </div>
+                            <button onclick="copyToClipboard('code-seed')" class="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-lg text-slate-600 dark:text-slate-300 font-medium transition-all">
+                                <i class="fa-regular fa-copy me-1"></i> Copy Code
+                            </button>
+                        </div>
+                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-xs leading-relaxed"><code id="code-seed">USE escuela_db;
+
+INSERT INTO Students (student_id, first_name, last_name, email)
+VALUES
+(1, 'Alice', 'Smith', 'alice@lagucc.cuny.edu'),
+(2, 'Bob', 'Johnson', 'bob@lagucc.cuny.edu'),
+(3, 'Carol', 'White', 'carol@lagucc.cuny.edu'),
+(4, 'David', 'Lee', 'david@lagucc.cuny.edu'),
+(5, 'Eva', 'Martinez', 'eva@lagucc.cuny.edu');
+
+INSERT INTO Courses (course_id, course_code, course_name, credits)
+VALUES
+(101, 'MAC190', 'Object-Oriented Programming', 4),
+(102, 'MAC220', 'Application Development for Android', 3),
+(103, 'MAC250', 'Database Concepts and Programming', 3),
+(104, 'MAC270', 'Advanced Data Structures', 3),
+(105, 'MAT200', 'Discrete Mathematics', 4);
+
+INSERT INTO Enrollments (student_id, course_id, registration_date)
+VALUES
+(1, 101, '2026-09-01'),
+(1, 103, '2026-09-01'),
+(1, 105, '2026-09-02'),
+(2, 102, '2026-09-01'),
+(2, 103, '2026-09-03'),
+(3, 101, '2026-09-01'),
+(3, 104, '2026-09-02'),
+(3, 105, '2026-09-04'),
+(4, 102, '2026-09-02'),
+(4, 103, '2026-09-03'),
+(4, 104, '2026-09-05'),
+(5, 101, '2026-09-01'),
+(5, 102, '2026-09-02'),
+(5, 103, '2026-09-03'),
+(5, 105, '2026-09-05');</code></pre>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm shadow-xl transition-all duration-300 opacity-0 pointer-events-none transform translate-y-2 flex items-center space-x-2 z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message">Copied!</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. OBJECT-ORIENTED PROGRAMMING (OOP) CLASSES
+        // ==========================================
+
+        class Student {
+            constructor(id, firstName, lastName, email, createdAt = new Date().toISOString().split('T')[0]) {
+                this.id = Number(id);
+                this.firstName = firstName;
+                this.lastName = lastName;
+                this.email = email;
+                this.createdAt = createdAt;
+            }
+
+            getFullName() {
+                return `${this.firstName} ${this.lastName}`;
+            }
+        }
+
+        class Course {
+            constructor(id, courseCode, courseName, credits) {
+                this.id = Number(id);
+                this.courseCode = courseCode;
+                this.courseName = courseName;
+                this.credits = Number(credits);
+            }
+        }
+
+        class Enrollment {
+            constructor(id, studentId, courseId, registrationDate) {
+                this.id = Number(id);
+                this.studentId = Number(studentId);
+                this.courseId = Number(courseId);
+                this.registrationDate = registrationDate;
+            }
+        }
+
+        class SchoolDatabase {
+            constructor() {
+                this.students = [];
+                this.courses = [];
+                this.enrollments = [];
+                this.nextStudentId = 1;
+                this.nextCourseId = 101;
+                this.nextEnrollmentId = 1;
+            }
+
+            // Student Methods
+            addStudent(firstName, lastName, email) {
+                const existing = this.students.find(s => s.email.toLowerCase() === email.toLowerCase());
+                if (existing) {
+                    throw new Error("A student with this email address already exists.");
+                }
+                const student = new Student(this.nextStudentId++, firstName, lastName, email);
+                this.students.push(student);
+                return student;
+            }
+
+            deleteStudent(studentId) {
+                this.students = this.students.filter(s => s.id !== studentId);
+                // Cascade Delete enrollments (ON DELETE CASCADE)
+                this.enrollments = this.enrollments.filter(e => e.studentId !== studentId);
+            }
+
+            // Course Methods
+            addCourse(courseCode, courseName, credits) {
+                const existing = this.courses.find(c => c.courseCode.toLowerCase() === courseCode.toLowerCase());
+                if (existing) {
+                    throw new Error("A course with this course code already exists.");
+                }
+                const course = new Course(this.nextCourseId++, courseCode, courseName, credits);
+                this.courses.push(course);
+                return course;
+            }
+
+            deleteCourse(courseId) {
+                this.courses = this.courses.filter(c => c.id !== courseId);
+                // Cascade Delete enrollments (ON DELETE CASCADE)
+                this.enrollments = this.enrollments.filter(e => e.courseId !== courseId);
+            }
+
+            // Enrollment Methods
+            addEnrollment(studentId, courseId, registrationDate) {
+                const sId = Number(studentId);
+                const cId = Number(courseId);
+                const exists = this.enrollments.some(e => e.studentId === sId && e.courseId === cId);
+                if (exists) {
+                    throw new Error("This student is already enrolled in this course.");
+                }
+                const enrollment = new Enrollment(this.nextEnrollmentId++, sId, cId, registrationDate);
+                this.enrollments.push(enrollment);
+                return enrollment;
+            }
+
+            deleteEnrollment(enrollmentId) {
+                this.enrollments = this.enrollments.filter(e => e.id !== enrollmentId);
+            }
+
+            // Helper / Aggregation Methods
+            getStudentEnrollmentsCount(studentId) {
+                return this.enrollments.filter(e => e.studentId === studentId).length;
+            }
+
+            getCourseEnrollmentsCount(courseId) {
+                return this.enrollments.filter(e => e.courseId === courseId).length;
+            }
+
+            // Pre-seed Data from seed.sql
+            seedInitialData() {
+                // Initial Students
+                const initialStudents = [
+                    { id: 1, firstName: 'Alice', lastName: 'Smith', email: 'alice@lagucc.cuny.edu' },
+                    { id: 2, firstName: 'Bob', lastName: 'Johnson', email: 'bob@lagucc.cuny.edu' },
+                    { id: 3, firstName: 'Carol', lastName: 'White', email: 'carol@lagucc.cuny.edu' },
+                    { id: 4, firstName: 'David', lastName: 'Lee', email: 'david@lagucc.cuny.edu' },
+                    { id: 5, firstName: 'Eva', lastName: 'Martinez', email: 'eva@lagucc.cuny.edu' }
+                ];
+
+                initialStudents.forEach(s => {
+                    this.students.push(new Student(s.id, s.firstName, s.lastName, s.email));
+                });
+                this.nextStudentId = 6;
+
+                // Initial Courses
+                const initialCourses = [
+                    { id: 101, code: 'MAC190', name: 'Object-Oriented Programming', credits: 4 },
+                    { id: 102, code: 'MAC220', name: 'Application Development for Android', credits: 3 },
+                    { id: 103, code: 'MAC250', name: 'Database Concepts and Programming', credits: 3 },
+                    { id: 104, code: 'MAC270', name: 'Advanced Data Structures', credits: 3 },
+                    { id: 105, code: 'MAT200', name: 'Discrete Mathematics', credits: 4 }
+                ];
+
+                initialCourses.forEach(c => {
+                    this.courses.push(new Course(c.id, c.code, c.name, c.credits));
+                });
+                this.nextCourseId = 106;
+
+                // Initial Enrollments
+                const initialEnrollments = [
+                    { studentId: 1, courseId: 101, date: '2026-09-01' },
+                    { studentId: 1, courseId: 103, date: '2026-09-01' },
+                    { studentId: 1, courseId: 105, date: '2026-09-02' },
+                    { studentId: 2, courseId: 102, date: '2026-09-01' },
+                    { studentId: 2, courseId: 103, date: '2026-09-03' },
+                    { studentId: 3, courseId: 101, date: '2026-09-01' },
+                    { studentId: 3, courseId: 104, date: '2026-09-02' },
+                    { studentId: 3, courseId: 105, date: '2026-09-04' },
+                    { studentId: 4, courseId: 102, date: '2026-09-02' },
+                    { studentId: 4, courseId: 103, date: '2026-09-03' },
+                    { studentId: 4, courseId: 104, date: '2026-09-05' },
+                    { studentId: 5, courseId: 101, date: '2026-09-01' },
+                    { studentId: 5, courseId: 102, date: '2026-09-02' },
+                    { studentId: 5, courseId: 103, date: '2026-09-03' },
+                    { studentId: 5, courseId: 105, date: '2026-09-05' }
+                ];
+
+                initialEnrollments.forEach(e => {
+                    this.addEnrollment(e.studentId, e.courseId, e.date);
+                });
+            }
+        }
+
+        // Initialize Database Instance
+        const db = new SchoolDatabase();
+        db.seedInitialData();
+
+        // Chart instances storage
+        let courseChartInstance = null;
+        let studentChartInstance = null;
+
+        // ==========================================
+        // 2. UI RENDERING & CONTROLLER LOGIC
+        // ==========================================
+
+        function renderAll() {
+            renderStudentsTable();
+            renderCoursesTable();
+            renderEnrollmentsTable();
+            renderDropdownOptions();
+            updateStatsAndBadges();
+            renderCharts();
+        }
+
+        function renderStudentsTable() {
+            const tbody = document.querySelector('#table-students tbody');
+            tbody.innerHTML = db.students.map(s => {
+                const count = db.getStudentEnrollmentsCount(s.id);
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td class="p-4 font-semibold text-brand-600 dark:text-brand-400">#${s.id}</td>
+                        <td class="p-4 font-medium">${s.getFullName()}</td>
+                        <td class="p-4 text-slate-500 dark:text-slate-400">${s.email}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-semibold">
+                                ${count} ${count === 1 ? 'Course' : 'Courses'}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <button onclick="removeStudent(${s.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all" title="Delete Student">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('count-students-text').innerText = `Showing ${db.students.length} registered students`;
+        }
+
+        function renderCoursesTable() {
+            const tbody = document.querySelector('#table-courses tbody');
+            tbody.innerHTML = db.courses.map(c => {
+                const count = db.getCourseEnrollmentsCount(c.id);
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td class="p-4 font-semibold text-slate-500">#${c.id}</td>
+                        <td class="p-4"><span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-mono font-bold rounded">${c.courseCode}</span></td>
+                        <td class="p-4 font-medium">${c.courseName}</td>
+                        <td class="p-4">${c.credits} Credits</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold">
+                                ${count} Enrolled
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <button onclick="removeCourse(${c.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all" title="Delete Course">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('count-courses-text').innerText = `Showing ${db.courses.length} course records`;
+        }
+
+        function renderEnrollmentsTable() {
+            const tbody = document.querySelector('#table-enrollments tbody');
+            tbody.innerHTML = db.enrollments.map(e => {
+                const student = db.students.find(s => s.id === e.studentId);
+                const course = db.courses.find(c => c.id === e.courseId);
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td class="p-4 font-mono text-xs text-slate-500">#${e.id}</td>
+                        <td class="p-4 font-medium">${student ? student.getFullName() : '<span class="text-rose-500">Deleted Student</span>'}</td>
+                        <td class="p-4"><span class="font-medium text-brand-600 dark:text-brand-400">${course ? `${course.courseCode} - ${course.courseName}` : '<span class="text-rose-500">Deleted Course</span>'}</span></td>
+                        <td class="p-4 text-slate-500 dark:text-slate-400">${e.registrationDate}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="removeEnrollment(${e.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all" title="Cancel Enrollment">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('count-enrollments-text').innerText = `${db.enrollments.length} Total Registrations`;
+        }
+
+        function renderDropdownOptions() {
+            const studentSelect = document.getElementById('enroll-student-select');
+            studentSelect.innerHTML = '<option value="" disabled selected>-- Choose Student --</option>' +
+                db.students.map(s => `<option value="${s.id}">${s.getFullName()} (${s.email})</option>`).join('');
+
+            const courseSelect = document.getElementById('enroll-course-select');
+            courseSelect.innerHTML = '<option value="" disabled selected>-- Choose Course --</option>' +
+                db.courses.map(c => `<option value="${c.id}">${c.courseCode} - ${c.courseName}</option>`).join('');
+
+            // Set default date to today
+            if (!document.getElementById('enroll-date').value) {
+                document.getElementById('enroll-date').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function updateStatsAndBadges() {
+            // Badges
+            document.getElementById('badge-students').innerText = db.students.length;
+            document.getElementById('badge-courses').innerText = db.courses.length;
+            document.getElementById('badge-enrollments').innerText = db.enrollments.length;
+
+            // Overview Cards
+            document.getElementById('stat-students').innerText = db.students.length;
+            document.getElementById('stat-courses').innerText = db.courses.length;
+            document.getElementById('stat-enrollments').innerText = db.enrollments.length;
+
+            const totalCredits = db.courses.reduce((sum, c) => sum + c.credits, 0);
+            document.getElementById('stat-credits').innerText = `Total Credits: ${totalCredits}`;
+
+            const ratio = db.students.length > 0 ? (db.enrollments.length / db.students.length).toFixed(1) : 0;
+            document.getElementById('stat-ratio').innerText = `~${ratio} Courses per student`;
+
+            // Popular Course Calculation
+            if (db.courses.length === 0 || db.enrollments.length === 0) {
+                document.getElementById('stat-popular-course').innerText = 'N/A';
+                document.getElementById('stat-popular-count').innerText = '0 Enrollments';
+            } else {
+                let maxCount = -1;
+                let topCourse = null;
+                db.courses.forEach(c => {
+                    const count = db.getCourseEnrollmentsCount(c.id);
+                    if (count > maxCount) {
+                        maxCount = count;
+                        topCourse = c;
+                    }
+                });
+                if (topCourse) {
+                    document.getElementById('stat-popular-course').innerText = `${topCourse.courseCode}`;
+                    document.getElementById('stat-popular-count').innerText = `${maxCount} Enrollments`;
+                }
+            }
+        }
+
+        function renderCharts() {
+            // Course Enrollment Distribution
+            const courseLabels = db.courses.map(c => c.courseCode);
+            const courseCounts = db.courses.map(c => db.getCourseEnrollmentsCount(c.id));
+
+            const ctxCourse = document.getElementById('courseChart').getContext('2d');
+            if (courseChartInstance) courseChartInstance.destroy();
+            courseChartInstance = new Chart(ctxCourse, {
+                type: 'bar',
+                data: {
+                    labels: courseLabels,
+                    datasets: [{
+                        label: 'Enrollments',
+                        data: courseCounts,
+                        backgroundColor: '#0284c7',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // Student Registrations Distribution
+            const studentLabels = db.students.map(s => s.getFullName());
+            const studentCounts = db.students.map(s => db.getStudentEnrollmentsCount(s.id));
+
+            const ctxStudent = document.getElementById('studentChart').getContext('2d');
+            if (studentChartInstance) studentChartInstance.destroy();
+            studentChartInstance = new Chart(ctxStudent, {
+                type: 'doughnut',
+                data: {
+                    labels: studentLabels,
+                    datasets: [{
+                        data: studentCounts,
+                        backgroundColor: [
+                            '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b', '#06b6d4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 3. EVENT HANDLERS (Create / Delete / UI)
+        // ==========================================
+
+        function handleCreateStudent(event) {
+            event.preventDefault();
+            const fn = document.getElementById('student-firstname').value.trim();
+            const ln = document.getElementById('student-lastname').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+
+            try {
+                const s = db.addStudent(fn, ln, email);
+                renderAll();
+                showToast(`Student ${s.getFullName()} created successfully!`, 'success');
+                document.getElementById('form-add-student').reset();
+                switchTab('students');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function handleCreateCourse(event) {
+            event.preventDefault();
+            const code = document.getElementById('course-code').value.trim();
+            const name = document.getElementById('course-name').value.trim();
+            const credits = document.getElementById('course-credits').value;
+
+            try {
+                const c = db.addCourse(code, name, credits);
+                renderAll();
+                showToast(`Course ${c.courseCode} added successfully!`, 'success');
+                document.getElementById('form-add-course').reset();
+                switchTab('courses');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function handleCreateEnrollment(event) {
+            event.preventDefault();
+            const sId = document.getElementById('enroll-student-select').value;
+            const cId = document.getElementById('enroll-course-select').value;
+            const date = document.getElementById('enroll-date').value;
+
+            try {
+                db.addEnrollment(sId, cId, date);
+                renderAll();
+                showToast(`Student successfully enrolled!`, 'success');
+                switchTab('enrollments');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function removeStudent(id) {
+            db.deleteStudent(id);
+            renderAll();
+            showToast('Student deleted successfully.', 'info');
+        }
+
+        function removeCourse(id) {
+            db.deleteCourse(id);
+            renderAll();
+            showToast('Course deleted successfully.', 'info');
+        }
+
+        function removeEnrollment(id) {
+            db.deleteEnrollment(id);
+            renderAll();
+            showToast('Enrollment cancelled.', 'info');
+        }
+
+        // Search Filter
+        function filterTable(tableType) {
+            const input = document.getElementById(`search-${tableType}`);
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById(`table-${tableType}`);
+            const trs = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < trs.length; i++) {
+                const text = trs[i].textContent.toLowerCase();
+                trs[i].style.display = text.includes(filter) ? '' : 'none';
+            }
+        }
+
+        // Navigation Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-500', 'text-white', 'shadow-lg', 'shadow-brand-500/30');
+                btn.classList.add('text-slate-600', 'dark:text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-brand-500', 'text-white', 'shadow-lg', 'shadow-brand-500/30');
+                activeBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
+            }
+
+            const titles = {
+                'overview': 'Dashboard Overview',
+                'students': 'Students Registry',
+                'courses': 'Available Courses',
+                'enrollments': 'Enrollment Logs',
+                'create': 'Create New Academic Record',
+                'sql-scripts': 'SQL Script Code'
+            };
+            document.getElementById('header-title').innerText = titles[tabId];
+        }
+
+        // Toast Messages
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgSpan = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+
+            msgSpan.innerText = message;
+            if (type === 'error') {
+                icon.className = 'fa-solid fa-circle-xmark text-rose-400';
+            } else if (type === 'info') {
+                icon.className = 'fa-solid fa-circle-info text-blue-400';
+            } else {
+                icon.className = 'fa-solid fa-circle-check text-emerald-400';
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+            }, 3000);
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Copy Helper
+        function copyToClipboard(elementId) {
+            const codeText = document.getElementById(elementId).innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Code copied to clipboard!');
+        }
+
+        // Initial Load Event
+        window.onload = function() {
+            renderAll();
+        };
+    </script>
+</body>
+</html>
